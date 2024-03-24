@@ -1,4 +1,4 @@
-let dbname = "uniqname"; // replace with your uniqname
+let dbname = "kimiweng"; // replace with your uniqname
 
 function cleanUp(){
     db.getCollectionNames().forEach((col) => {
@@ -30,7 +30,7 @@ function cleanUp(){
 
     print("=== Test 2 ===");
     unwind_friends(dbname);
-    let ans2 = db.flat_users.countDocuments();
+    let ans2 = db.flat_users.count();
     if (ans2 == 21355) {
         print("Local test passed! Partially correct.");
     } else {

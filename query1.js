@@ -4,12 +4,11 @@
 
 function find_user(city, dbname) {
     db = db.getSiblingDB(dbname);
-
     let results = [];
-    // TODO: find all users who live in city
-    // db.users.find(...);
-
-    // See test.js for a partial correctness check.
-
+    let user_ids = db.users.find({"hometown.city": city}, {user_id: 1, _id: 0});
+    while (user_ids.hasNext()) {
+        let curr_id = user_ids.next();
+        results.push(curr_id);
+    }
     return results;
 }
