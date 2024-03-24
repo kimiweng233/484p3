@@ -8,10 +8,9 @@
 // {user1:userx1, user2:userx2, user3:userx3,...}
 
 function oldest_friend(dbname) {
-    db = db.getSiblingDB(dbname);
+  db = db.getSiblingDB(dbname);
 
-    let results = {};
-    // TODO: implement oldest friends
+  let results = {};
 
-    return results;
+  return results;
 }
