@@ -12,5 +12,75 @@ function oldest_friend(dbname) {
 
   let results = {};
 
+  db.users.aggregate([
+    { $unwind: "$friends" },
+    {
+      $project: {
+        _id: 0,
+        user_id: 1,
+        friends: "$friends",
+      },
+    },
+    { $out: "flat_users" },
+  ]);
+
+  db.flat_users.find().forEach(function (myDoc) {
+    let yob1 = db.users
+      .find({ user_id: myDoc.friends }, { YOB: 1 })
+      .toArray()[0].YOB;
+    let yob2 = db.users
+      .find({ user_id: myDoc.user_id }, { YOB: 1 })
+      .toArray()[0].YOB;
+
+    db.flat_users.updateOne(
+      {
+        user_id: myDoc.user_id,
+        friends: myDoc.friends,
+      },
+      { $set: { YOB: yob1 } }
+    );
+
+    db.flat_users.insert({
+      user_id: myDoc.friends,
+      friends: myDoc.user_id,
+      YOB: yob2,
+    });
+  });
+
+  // db.flat_users.find().forEach(function (myDoc) {
+  //   let yob = db.users
+  //     .find({ user_id: myDoc.friends }, { YOB: 1 })
+  //     .toArray()[0].YOB;
+
+  //   db.flat_users.updateOne(
+  //     {
+  //       user_id: myDoc.user_id,
+  //       friends: myDoc.friends,
+  //     },
+  //     { $set: { YOB: yob } }
+  //   );
+  // });
+
+  db.flat_users.aggregate([
+    { $sort: { YOB: 1, user_id: 1 } },
+    { $group: { _id: "$user_id", friends: { $first: "$friends" } } },
+    { $out: "oldest_friend" },
+  ]);
+
+  db.oldest_friend.find().forEach(function (myDoc) {
+    results[myDoc._id] = myDoc.friends;
+  });
+
+  // const set = new Set();
+  // db.flat_users
+  //   .find()
+  //   .sort({ YOB: 1, user_id: 1 })
+  //   .forEach(function (myDoc) {
+  //     if (!set.has(myDoc.user_id)) {
+  //       set.add(myDoc.user_id);
+  //       results[myDoc.user_id] = myDoc.friends;
+  //     }
+  //   });
+
   return results;
 }
