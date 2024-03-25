@@ -19,31 +19,18 @@ function oldest_friend(dbname) {
         _id: 0,
         user_id: 1,
         friends: "$friends",
+        YOB: 1,
       },
     },
     { $out: "flat_users" },
   ]);
 
   db.flat_users.find().forEach(function (myDoc) {
-    let yob1 = db.users
-      .find({ user_id: myDoc.friends }, { YOB: 1 })
-      .toArray()[0].YOB;
-    let yob2 = db.users
-      .find({ user_id: myDoc.user_id }, { YOB: 1 })
-      .toArray()[0].YOB;
-
-    db.flat_users.updateOne(
-      {
-        user_id: myDoc.user_id,
-        friends: myDoc.friends,
-      },
-      { $set: { YOB: yob1 } }
-    );
-
+    let yob = db.users.findOne({ user_id: myDoc.friends }, { YOB: 1 }).YOB;
     db.flat_users.insert({
       user_id: myDoc.friends,
       friends: myDoc.user_id,
-      YOB: yob2,
+      YOB: yob,
     });
   });
 
@@ -63,7 +50,7 @@ function oldest_friend(dbname) {
 
   db.flat_users.aggregate([
     { $sort: { YOB: 1, user_id: 1 } },
-    { $group: { _id: "$user_id", friends: { $first: "$friends" } } },
+    { $group: { _id: "$friends", friends: { $first: "$user_id" } } },
     { $out: "oldest_friend" },
   ]);
 
